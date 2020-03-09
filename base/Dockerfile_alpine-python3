@@ -17,28 +17,21 @@ ADD https://bootstrap.pypa.io/get-pip.py /tmp/get-pip.py
 
 # Package Installation
 # Packages - https://pkgs.alpinelinux.org/packages
-RUN apk upgrade --update && \
-apk add --no-cache bash \
-    shadow \
-    tar \
-    dos2unix && \
-#
-# Dockerize Config
-tar -C /usr/local/bin -xzvf /tmp/dockerize.tar.gz && \
-#
-# Python PIP Install
+RUN apk update && \
+apk add --no-cache bash && \
+apk add shadow && \
+apk add dos2unix && \
+apk add gcc && \
+apk add musl-dev
+
+
+RUN tar -C /usr/local/bin -xzvf /tmp/dockerize.tar.gz && \
 python3 /tmp/get-pip.py && \
 pip3 install --upgrade pip && \
-#
-# SB_Utils install
 cd /tmp/modules/utils && \
 python3 setup.py install && \
 cd && \
-#
-# Cleanup
 apk del tar && \
 rm -rf /var/cache/apk/* *.tar.gz* /usr/src /root/.gnupg /tmp/* && \
-#
-# Check versions
 python3 --version && \
 pip3 --version
