@@ -19,10 +19,10 @@ ADD HTTPS/ /opt/transport/HTTPS
 WORKDIR /opt/transport
 
 # Requirements install
-RUN apk update
+RUN apk update 
 RUN apk add --no-cache \
     bash \
-    openssl && \
+    apk add openssl && \
     pip3 install -r /tmp/requirements.txt && \
     rm -r /root/.cache && \
     chmod +x /opt/transport/dev_start.sh && \
@@ -36,7 +36,6 @@ RUN openssl genrsa -des3 -passout pass:develop -out /opt/transport/HTTPS/certs/s
     openssl req -new -key /opt/transport/HTTPS/certs/server.key -out /opt/transport/HTTPS/certs/server.csr \
         -subj "/C=US/O=flask/OU=Screaming Bunny" && \
     openssl x509 -req -days 365 -in /opt/transport/HTTPS/certs/server.csr -signkey /opt/transport/HTTPS/certs/server.key -out /opt/transport/HTTPS/certs/server.crt
-
 # Run command when container launches
 CMD ["./dev_start.sh"]
 

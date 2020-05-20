@@ -1,6 +1,6 @@
 import re
 import urllib3
-
+import json
 from datetime import datetime
 from sb_utils import Producer, Consumer, default_encode, decode_msg, encode_msg, safe_json
 
@@ -11,7 +11,7 @@ def process_message(body, message):
     :param body: Contains the message to be sent.
     :param message: Contains data about the message as well as headers
     """
-    http = urllib3.PoolManager(cert_reqs="CERT_NONE")
+    http = urllib3.PoolManager(cert_reqs='CERT_REQUIRED', ca_certs=/opt/transport/HTTPS/certs/CERTNAME)
     producer = Producer()
 
     body = body if isinstance(body, dict) else safe_json(body)
@@ -33,7 +33,7 @@ def process_message(body, message):
                     rsp = http.request(
                         method="POST",
                         url=f"https://{device_socket}",
-                        body=encode_msg(body, encoding),  # command being encoded
+                        body=encode_msg(body,encoding),  # command being encoded
                         headers={
                             "Content-type": f"application/openc2-cmd+{encoding};version=1.0",
                             # "Status": ...,  # Numeric status code supplied by Actuator's OpenC2-Response
@@ -45,10 +45,15 @@ def process_message(body, message):
                     )
 
                     rsp_headers = dict(rsp.headers)
-                    if "Content-type" in rsp_headers:
-                        rsp_enc = re.sub(r"^application/openc2-(cmd|rsp)\+", "", rsp_headers["Content-type"])
+                    rsp_headers["Content-Type"] = "application/json"
+                    if "Content-Type" in rsp_headers:
+                        rsp_enc = re.sub(r"^application/openc2-(cmd|rsp)\+", "", rsp_headers["Content-Type"])
+                        print("before any changes to encoding", rsp_enc)
                         rsp_enc = re.sub(r"(;version=\d+\.\d+)?$", "", rsp_enc)
+                        print("Encoding you used",encoding)
+                        rsp_enc = encoding
                     else:
+
                         rsp_enc = "json"
 
                     rsp_headers = {
@@ -58,12 +63,13 @@ def process_message(body, message):
                         "encoding": rsp_enc,
                         "transport": "https"
                     }
-
+                    print("you passed rsp_headers")
+                    content = json.dumps(rsp.data.decode('utf-8'))
                     data = {
-                        "headers": rsp_headers,
-                        "content": decode_msg(rsp.data.decode("utf-8"), rsp_enc)
-                    }
-
+                            "headers": rsp_headers,
+                            "content": decode_msg(rsp.data.decode("utf-8"), rsp_enc)
+                    }}
+                    print("LOOK HERE",data)
                     print(f"Response from request: {rsp.status} - {safe_json(data)}")
                     producer.publish(message=data["content"], headers=rsp_headers, exchange="orchestrator", routing_key="response")
                 except Exception as err:
