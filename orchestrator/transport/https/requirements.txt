@@ -4,4 +4,3 @@ requests
 flask
 dicttoxml
 xmltodict
-json

@@ -22,7 +22,7 @@ WORKDIR /opt/transport
 RUN apk update 
 RUN apk add --no-cache \
     bash \
-    apk add openssl && \
+    openssl && \
     pip3 install -r /tmp/requirements.txt && \
     rm -r /root/.cache && \
     chmod +x /opt/transport/dev_start.sh && \

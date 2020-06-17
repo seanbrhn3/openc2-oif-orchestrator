@@ -3,7 +3,7 @@ import urllib3
 import json
 from datetime import datetime
 from sb_utils import Producer, Consumer, default_encode, decode_msg, encode_msg, safe_json
-
+import requests
 
 def process_message(body, message):
     """
@@ -11,7 +11,7 @@ def process_message(body, message):
     :param body: Contains the message to be sent.
     :param message: Contains data about the message as well as headers
     """
-    http = urllib3.PoolManager(cert_reqs='CERT_REQUIRED', ca_certs=/opt/transport/HTTPS/certs/CERTNAME)
+    http = urllib3.PoolManager(cert_reqs='CERT_REQUIRED', ca_certs='/opt/transport/HTTPS/certs/CERTNAME')
     producer = Producer()
 
     body = body if isinstance(body, dict) else safe_json(body)
@@ -68,7 +68,7 @@ def process_message(body, message):
                     data = {
                             "headers": rsp_headers,
                             "content": decode_msg(rsp.data.decode("utf-8"), rsp_enc)
-                    }}
+                    }
                     print("LOOK HERE",data)
                     print(f"Response from request: {rsp.status} - {safe_json(data)}")
                     producer.publish(message=data["content"], headers=rsp_headers, exchange="orchestrator", routing_key="response")
